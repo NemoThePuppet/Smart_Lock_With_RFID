@@ -2,7 +2,9 @@
 #include <ESP8266HTTPClient.h> 
 
 const char* ssid     = "Redmi";         // The SSID (name) of the Wi-Fi network you want to connect to
-const char* password = "12345678";     // The password of the Wi-Fi network
+const char* password = "12345678";      // The password of the Wi-Fi network
+const int records = 1;                  // 0 = Get all records from the DB. 1 = Get only TagUID, AccessLevel.
+
 
 void setup() {
   Serial.begin(115200);         // Start the Serial communication to send messages to the computer
@@ -24,10 +26,12 @@ void setup() {
   Serial.print("IP address:\t");
   Serial.println(WiFi.localIP());         // Send the IP address of the ESP8266 to the computer
 
-
-  String result = Get("http://rfidlock.azurewebsites.net/data.php?");
-  Serial.println("result");
+  String getQuery = "http://rfidlock.azurewebsites.net/data.php?records=";
+  getQuery = getQuery + records;
+  String result = Get(getQuery); // 
+  Serial.println("Result: ");
   Serial.println(result);
+
 }
 
 void loop() {}
