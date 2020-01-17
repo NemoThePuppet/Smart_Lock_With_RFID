@@ -6,7 +6,7 @@
 - control the lock
 - 
 
-### Still left
+### Still left to do
 - database
 - local database
 - RFID reader
