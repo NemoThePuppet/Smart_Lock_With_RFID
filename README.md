@@ -14,3 +14,6 @@
 - Master key
 - Additional information in database
 - Security
+
+? PCB
+? 3D printed case
