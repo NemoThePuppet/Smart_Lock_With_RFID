@@ -6,14 +6,13 @@
 - control the lock
 - read tag
 - compare readed tag to database
+- register / deregister
+- Master key
+
 
 ### Still left to do
-- database
-- register / deregister
+
 - local database
-- Master key
 - Additional information in database
 - Security
 
-? PCB
-? 3D printed case
