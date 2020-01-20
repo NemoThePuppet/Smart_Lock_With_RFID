@@ -10,6 +10,9 @@
 #define redLED D0
 #define greenLED D1
 
+String stringTagUID = "";
+String masterKeyUID = "59371213";
+
 // WiFi connection
 const char* ssid     = "Redmi";           // The SSID (name) of the Wi-Fi network you want to connect to
 const char* password = "12345678";        // The password of the Wi-Fi network
@@ -20,6 +23,7 @@ MFRC522 rfid(SS_PIN, RST_PIN);            // Instance of the class
 byte nuidPICC[4];                         // Init array that will store new NUID 
 
 bool lockStatus = true;                   // 1 - locked. 0 - unlocked.
+bool adminMode = false;
 
 void setup() {
   Serial.begin(9600);         // Start the Serial communication to send messages to the computer
@@ -54,7 +58,8 @@ void setup() {
 void loop() {
   digitalWrite(lockPin,HIGH);
   lockStatus = true;
-  lightLED(lockStatus);
+  lightLED(lockStatus, adminMode);
+  stringTagUID = "";
   
   // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
   if ( ! rfid.PICC_IsNewCardPresent())
@@ -67,10 +72,13 @@ void loop() {
   // Store NUID into nuidPICC array
   for (byte i = 0; i < 4; i++) {
     nuidPICC[i] = rfid.uid.uidByte[i];
+    stringTagUID.concat(nuidPICC[i]);
   }
-
+  
   // Serial printing for debugging/additional info
   Serial.println(F("The NUID tag is:"));
+  Serial.print(F("String: "));
+  Serial.println(stringTagUID);
   Serial.print(F("In orig: "));
   for (byte i = 0; i < 4; i++) {
     Serial.print(rfid.uid.uidByte[i]);
@@ -80,35 +88,42 @@ void loop() {
   Serial.print(F("In hex: "));
   printHex(rfid.uid.uidByte, rfid.uid.size);
   Serial.println();
-  Serial.print(F("In dec: "));
-  printDec(rfid.uid.uidByte, rfid.uid.size);
   Serial.println();
-  Serial.println();
-
-  // Construction of a query (for GET request).
-  String getQuery = "http://rfidlock.azurewebsites.net/data.php?tagUID='";
-  for(int i = 0; i<4;i++){
-    getQuery.concat(nuidPICC[i]);         // Concatenates URL with tagUID received from reader (in byte[]).
-  }
-  getQuery.concat("'");
   
-  Serial.print("Created query: ");
-  Serial.println(getQuery);
-  
-  String result = Get(getQuery);          // Sends GET query to the webserver
-  Serial.print("Result: ");
-  Serial.println(result);
-
-  if(result == "[]"){
-    lockStatus = true;
-  }else{
-    digitalWrite(lockPin, LOW);
-    lockStatus = false;
-    lightLED(lockStatus);
-    delay(2000);
+  if(stringTagUID == masterKeyUID){
+    adminMode = true; 
   }
-
-
+  
+  String result = "";
+  
+  if(adminMode){
+    Serial.println("Admin mode initialized!");
+    if(stringTagUID != masterKeyUID){
+      result = sendQuery("GET", stringTagUID);
+      
+      if(result == "0"){
+        // SEND POST REQUEST TO REGISTER NEW TAG UID
+        Serial.println("Registering new UID...");
+        result = sendQuery("POSTreg", stringTagUID);
+        
+      }
+      else if(result == "1"){
+        // SEND POST REQUEST TO DEREGISTER NEW TAG UID
+        Serial.println("Deregistering UID...");
+        result = sendQuery("POSTdereg", stringTagUID);
+      }else{
+        Serial.println("NAHT WORKANG DOMBASS!");
+      }
+      adminMode = false;
+    }
+    return;
+  }
+  else if(!adminMode){
+    result = sendQuery("GET", stringTagUID);
+  }
+  
+  action(result, &lockStatus);
+  
   // Halt PICC
   rfid.PICC_HaltA();
 
@@ -175,12 +190,48 @@ void printDec(byte *buffer, byte bufferSize) {
   }
 }
 
-void lightLED(bool lockStatus){
-  if(lockStatus){
+void lightLED(bool lockStatus, bool adminMode){
+  if(adminMode){
+    digitalWrite(greenLED,HIGH);
+    digitalWrite(redLED,HIGH);
+  }
+  else if(lockStatus){
     digitalWrite(greenLED,LOW);
     digitalWrite(redLED,HIGH);
   }else{
     digitalWrite(redLED,LOW);
     digitalWrite(greenLED,HIGH);
   }
+}
+
+void action(String result, bool* lockStatus){
+  if(result == "0"){
+    *lockStatus = true;
+  }else if(result == "1"){
+    digitalWrite(lockPin, LOW);
+    *lockStatus = false;
+    lightLED(*lockStatus, false);
+    delay(2000);
+  }else{
+    Serial.println("NAHT WORKANG DOMBASS!");
+  }
+}
+
+String sendQuery(String request, String stringTagUID){
+  String result = "";
+  String query = "http://rfidlock.azurewebsites.net/data.php?tagUID='";
+  query.concat(stringTagUID);
+  query.concat("'");
+  if(request == "GET"){
+    result = Get(query);
+  }
+  else if(request == "POSTreg"){
+    query.concat("&register=1");
+    result = Post(query);
+  }else if(request == "POSTdereg"){
+    result = Post(query);
+  }
+  Serial.print("Result: ");
+  Serial.println(result);
+  return result;
 }
