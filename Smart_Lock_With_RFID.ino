@@ -2,6 +2,8 @@
 #include <MFRC522.h>
 #include <ESP8266WiFi.h>        // Include the Wi-Fi library
 #include <ESP8266HTTPClient.h> 
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 // Defined pins for ESP8266 (DO NOT USE D4)
 #define SS_PIN D8       // RFID pin SS
@@ -16,14 +18,20 @@ String masterKeyUID = "59371213";
 // WiFi connection
 const char* ssid     = "Redmi";           // The SSID (name) of the Wi-Fi network you want to connect to
 const char* password = "12345678";        // The password of the Wi-Fi network
-//const int records = 1;                  // NOT USED FOR NOW!!! 0 = Get all records from the DB. 1 = Get only TagUID, AccessLevel.
 
 // RFID Reader initialization
 MFRC522 rfid(SS_PIN, RST_PIN);            // Instance of the class
-byte nuidPICC[4];                         // Init array that will store new NUID 
+//byte nuidPICC[4];                         // Init array that will store new NUID 
 
 bool lockStatus = true;                   // 1 - locked. 0 - unlocked.
 bool adminMode = false;
+
+
+// Define NTP Client to get time
+const long utcOffsetInSeconds = 29000; // UTC+1 Time Zone
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 void setup() {
   Serial.begin(9600);         // Start the Serial communication to send messages to the computer
@@ -53,6 +61,7 @@ void setup() {
   Serial.print("IP address:\t");
   Serial.println(WiFi.localIP());         // Send the IP address of the ESP8266 to the computer
 
+  timeClient.begin();
 }
 
 void loop() {
@@ -71,9 +80,10 @@ void loop() {
 
   // Store NUID into nuidPICC array
   for (byte i = 0; i < 4; i++) {
-    nuidPICC[i] = rfid.uid.uidByte[i];
-    stringTagUID.concat(nuidPICC[i]);
+    //nuidPICC[i] = rfid.uid.uidByte[i];
+    stringTagUID.concat(rfid.uid.uidByte[i]);
   }
+  
   
   // Serial printing for debugging/additional info
   Serial.println(F("The NUID tag is:"));
@@ -97,6 +107,10 @@ void loop() {
   String result = "";
   
   if(adminMode){
+    
+    // Halt PICC
+    rfid.PICC_HaltA();
+    
     Serial.println("Admin mode initialized!");
     if(stringTagUID != masterKeyUID){
       result = sendQuery("GET", stringTagUID);
@@ -112,7 +126,7 @@ void loop() {
         Serial.println("Deregistering UID...");
         result = sendQuery("POSTdereg", stringTagUID);
       }else{
-        Serial.println("NAHT WORKANG DOMBASS!");
+        Serial.println("ERROR: Unreadable result. Wait and try again.");
       }
       adminMode = false;
     }
@@ -207,13 +221,23 @@ void lightLED(bool lockStatus, bool adminMode){
 void action(String result, bool* lockStatus){
   if(result == "0"){
     *lockStatus = true;
-  }else if(result == "1"){
+  }else if(result == "2"){
     digitalWrite(lockPin, LOW);
     *lockStatus = false;
     lightLED(*lockStatus, false);
     delay(2000);
+  }else if(result == "1"){
+    timeClient.update();
+    
+    // Check if it's not weekend (Sunday = 0, Saturday = 6) and if it's between 8:00 and 18:00.
+    if(timeClient.getDay()>=1 && timeClient.getDay()<=5 && timeClient.getHours()>=8 && timeClient.getHours()<=17){
+      digitalWrite(lockPin, LOW);
+      *lockStatus = false;
+      lightLED(*lockStatus, false);
+      delay(2000);
+      }
   }else{
-    Serial.println("NAHT WORKANG DOMBASS!");
+    Serial.println("ERROR: Unreadable result. Wait and try again.");
   }
 }
 

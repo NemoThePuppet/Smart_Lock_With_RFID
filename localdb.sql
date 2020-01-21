@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:49509
--- Generation Time: Jan 16, 2020 at 08:47 AM
+-- Generation Time: Jan 21, 2020 at 03:46 AM
 -- Server version: 5.7.9
 -- PHP Version: 5.6.40
 
@@ -31,7 +31,7 @@ CREATE TABLE `data` (
   `Name` tinytext,
   `Tag_UID` tinytext NOT NULL,
   `Registration_Time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `Access_Level` tinyint(4) NOT NULL
+  `Access_Level` tinyint(4) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -39,9 +39,7 @@ CREATE TABLE `data` (
 --
 
 INSERT INTO `data` (`ID`, `Name`, `Tag_UID`, `Registration_Time`, `Access_Level`) VALUES
-(1, NULL, '02 6F EF 9A', '2020-01-16 11:18:25', 1),
-(2, NULL, '49 FA 9F CD', '2020-01-16 13:07:54', 1),
-(3, NULL, '67 52 CE 7A', '2020-01-16 13:08:31', 2);
+(1, NULL, '101166173117', '2020-01-21 11:41:34', 2);
 
 --
 -- Indexes for dumped tables
@@ -61,7 +59,7 @@ ALTER TABLE `data`
 -- AUTO_INCREMENT for table `data`
 --
 ALTER TABLE `data`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
