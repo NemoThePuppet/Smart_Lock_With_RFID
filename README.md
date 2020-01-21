@@ -5,14 +5,14 @@
 
 - control the lock
 - read tag
-- compare readed tag to database
+- compare read tag to database
 - register / deregister
 - Master key
+- Access level
 
 
 ### Still left to do
 
 - local database
-- Additional information in database
 - ?? Security (tooo much)
 
