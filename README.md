@@ -1,18 +1,18 @@
 # Smart_Lock_With_RFID
-## Arduino january course 2020
+## Arduino January Course 2020
 
 ### Already done
 
-- control the lock
-- read tag
-- compare read tag to database
-- register / deregister
+- Control the lock
+- Read tag
+- Compare read tag to database
+- Register / deregister
 - Master key
+- Timer for admin mode
 - Access level
 
 
 ### Still left to do
-
-- ~~local database
-- ~~?? Security (tooo much)
+- ~~Local database~~
+- ~~Security (encryption)~~
 
