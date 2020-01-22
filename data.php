@@ -51,34 +51,35 @@ if($_SERVER["REQUEST_METHOD"] == 'POST'){
     
 } else if($_SERVER["REQUEST_METHOD"] == 'GET'){
     
-    $records = 0;
+    //$records = 0;
     $tagUID = '0';
     
     if(isset($_GET["records"])){ $records = $_GET["records"];}
     if(isset($_GET["tagUID"])){ $tagUID = $_GET["tagUID"];}
     
     
-    if($records == 1){ $query = "select tag_uid, access_level from data order by id";}
-    
-    if($tagUID != '0'){ $query = "select access_level from data where Tag_UID = " . $tagUID;}
-    
-    
-    else{$query = "select * from data order by id";}
+    //if($records == 1){ $query = "select tag_uid, access_level from data order by id";}
+    if($tagUID != '0'){
+        $query = "select access_level from data where Tag_UID = " . $tagUID;
+        $result = mysqli_query($link, $query) or die(mysqli_error($link));
+        $data = mysqli_fetch_object($result);
+        if (empty($data)) {
+            echo '0';
+        }else{
+            echo $data->access_level;
+        }
+    }
+    else{
+        $query = "select * from data order by id";
+        $result = $link->query($query);
+        $dbdata = array();
+        while ( $row = $result->fetch_assoc())  {
+      	  $dbdata[]=$row;
+        }
+        echo json_encode($dbdata);
+    }
         
-    // $result = $link->query($query);
-    $result = mysqli_query($link, $query) or die(mysqli_error($link));
-    $data = mysqli_fetch_object($result);
     
-    // $dbdata = array();
-    // while ( $row = $result->fetch_assoc())  {
-    //   $dbdata[]=$row;
-    // }
-    
-    if (empty($data)) {
-        echo '0';
-    }else{
-        echo $data->access_level;
-    }    
 }
 
 mysqli_close($link);

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:49509
--- Generation Time: Jan 21, 2020 at 03:46 AM
+-- Generation Time: Jan 22, 2020 at 05:21 AM
 -- Server version: 5.7.9
 -- PHP Version: 5.6.40
 
@@ -39,7 +39,7 @@ CREATE TABLE `data` (
 --
 
 INSERT INTO `data` (`ID`, `Name`, `Tag_UID`, `Registration_Time`, `Access_Level`) VALUES
-(1, NULL, '101166173117', '2020-01-21 11:41:34', 2);
+(1, 'John Doe', '65A6AD75', '2020-01-21 11:41:34', 2);
 
 --
 -- Indexes for dumped tables
