@@ -31,7 +31,7 @@ MFRC522 rfid(SS_PIN, RST_PIN);            // Creating of instance of the RFID re
 
 
 // Define NTP Client to get time
-const long utcOffsetInSeconds = 3600;     // UTC+1 Time Zone
+const long utcOffsetInSeconds = 21600;     // UTC+1 Time Zone
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);       
 
@@ -131,7 +131,7 @@ void loop() {
         Serial.println("Registering new UID...");
         result = sendQuery("POSTreg", stringTagUID);
       }
-      else if(result == "1"){
+      else if(result == "1" || result == "2"){
         // SEND POST REQUEST TO DEREGISTER NEW TAG UID
         Serial.println("Deregistering UID...");
         result = sendQuery("POSTdereg", stringTagUID);
