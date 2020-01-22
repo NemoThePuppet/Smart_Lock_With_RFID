@@ -13,6 +13,6 @@
 
 ### Still left to do
 
-- local database
-- ?? Security (tooo much)
+- ~~local database
+- ~~?? Security (tooo much)
 
